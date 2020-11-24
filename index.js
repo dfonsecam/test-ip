@@ -7,22 +7,32 @@ const app = express();
 app.use(text());
 
 app.get('/', (req, res) => {
-    get('https://api.ipify.org?format=json')
-        .then((result) => {
-            const hostname = req.hostname;
-            const response = { ...result.data };
-            res.send({ hostname, response });
-        })
-        .catch((error) => res.send(error));
+  get('https://api.ipify.org?format=json')
+    .then((result) => {
+      const hostname = req.hostname;
+      const response = { ...result.data };
+      res.send({ hostname, response });
+    })
+    .catch((error) => res.send(error));
 });
 
-app.post('/exec', (req, res) => {
-    const output = shell.exec(req.body, {
-        timeout: 10 * 1000
-    });
-    res.send(output.stdout);
-});
+app.post('/exec', async (req, res) =>
+  shell.exec(
+    req.body,
+    {
+      timeout: 10 * 1000,
+    },
+    (code, stdout, stderr) => {
+      console.log(`Command response code: ${code}.`);
+      if (stdout) {
+        res.send(`Output: ${stdout}`);
+      } else if (stderr) {
+        res.send(`Error: ${stderr}`);
+      }
+    },
+  ),
+);
 
 app.listen(8080, () => {
-    console.log(`listening`);
+  console.log(`listening`);
 });
