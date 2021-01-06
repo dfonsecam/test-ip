@@ -9,7 +9,7 @@ RUN apt-get install -y telnet
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json .npmrc ./
 RUN npm install --only=production
 
 COPY . .
