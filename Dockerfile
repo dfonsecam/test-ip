@@ -1,16 +1,19 @@
-FROM gcr.io/google_appengine/nodejs
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends apt-utils
-RUN apt-get install -y curl
-RUN apt-get install -y iputils-ping
-RUN apt-get install -y net-tools
-RUN apt-get install -y traceroute
-RUN apt-get install -y telnet
+FROM node:20
+RUN apt-get update -y \ 
+    # install apt-utils
+    && apt-get install -y --no-install-recommends apt-utils \
+    && apt-get install -y curl \ 
+    && apt-get install -y iputils-ping \ 
+    && apt-get install -y net-tools \
+    && apt-get install -y traceroute \
+    && apt-get install -y telnet \
+    # remove cache
+    && apt-get clean
 
 WORKDIR /app
 
-COPY package.json .npmrc ./
-RUN npm install --only=production
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
 

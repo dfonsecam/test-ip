@@ -1,23 +1,24 @@
-const { get } = require('axios').default;
-const { text } = require('body-parser');
-const express = require('express');
-const shell = require('shelljs');
+import bparser from "body-parser";
+import expcors from "cors";
+import express from "express";
+import shelljs from "shelljs";
 
 const app = express();
-app.use(text());
+app.use(bparser.text());
+app.use(expcors({ origin: true }));
 
-app.get('/', (req, res) => {
-  get('https://api.ipify.org?format=json')
-    .then((result) => {
+app.get("/", (req, res) => {
+  fetch("https://api.ipify.org?format=json")
+    .then(async (result) => {
+      const response = await result.json();
       const hostname = req.hostname;
-      const response = { ...result.data };
       res.send({ hostname, response });
     })
     .catch((error) => res.send(error));
 });
 
-app.post('/exec', async (req, res) =>
-  shell.exec(
+app.post("/exec", async (req, res) =>
+  shelljs.exec(
     req.body,
     {
       timeout: 10 * 1000,

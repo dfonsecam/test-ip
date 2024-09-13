@@ -1,14 +1,27 @@
 steps:
-    - name: gcr.io/cloud-builders/gcloud
-      entrypoint: "bash"
-      args:
-          [
-              "-c",
-              "gcloud secrets versions access latest --secret=impesa-npmrc --format='get(payload.data)' | tr '_-' '/+' | base64 -d > .npmrc",
-          ]
-    # Build the container image
-    - name: "gcr.io/cloud-builders/docker"
-      args: ["build", "-t", "gcr.io/$PROJECT_ID/test-ip:latest", "."]
-    # Push the container image to Container Registry
-    - name: "gcr.io/cloud-builders/docker"
-      args: ["push", "gcr.io/$PROJECT_ID/test-ip:latest"]
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/test-ip:latest", "."]
+  # Push the container image to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/test-ip:latest"]
+  # Deploy the container image to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "test-ip"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/test-ip:latest"
+      - "--region"
+      - "us-central1"
+      - "--platform"
+      - "managed"
+      - "--max-instances"
+      - "1"
+      - "--no-allow-unauthenticated"
+      - "--vpc-egress"
+      - "private-ranges-only"
+      - "--vpc-connector"
+      - "projects/$PROJECT_ID/locations/us-central1/connectors/vpc-sconn-vpn01"

@@ -1,7 +1,8 @@
 url=$(shell gcloud run services describe test-ip --format='value(status.url)' --region us-central1 --platform managed)
 uid=$(shell gcloud auth print-identity-token)
 pid=$(shell gcloud config get-value core/project)
-cmd="telnet 10.2.0.40 80"
+
+cmd="telnet monibytebb 80"
 
 all:
 	@echo "build  - Build the docker image"
@@ -10,17 +11,7 @@ all:
 	@echo "call   - Call the Cloud Run service"
 
 build:
-	gcloud builds submit --tag gcr.io/$(pid)/test-ip
-
-deploy:
-	gcloud beta run deploy test-ip \
-		--image gcr.io/$(pid)/test-ip \
-		--max-instances 1 \
-		--platform managed \
-		--region us-central1 \
-		--no-allow-unauthenticated \
-		--vpc-connector projects/$(pid)/locations/us-central1/connectors/vpc-sconn-vpn01 \
-		--vpc-egress all
+	gcloud builds submit
 
 clean:
 	-gcloud container images delete gcr.io/$(pid)/test-ip --quiet
@@ -35,7 +26,6 @@ call-nat:
 	curl $$url \
 		--request GET \
 		--header "Authorization: Bearer $$token" \
-
 
 call-cmd:
 	@echo "Executing $(cmd)"
