@@ -22,6 +22,6 @@ steps:
       - "1"
       - "--no-allow-unauthenticated"
       - "--vpc-egress"
-      - "private-ranges-only"
+      - "all"
       - "--vpc-connector"
       - "projects/$PROJECT_ID/locations/us-central1/connectors/vpc-sconn-vpn01"
