@@ -15,9 +15,9 @@
     "author": "dfonsecam",
     "license": "ISC",
     "dependencies": {
-        "body-parser": "1.20.3",
+        "body-parser": "2.2.1",
         "cors": "2.8.5",
-        "express": "4.21.0",
-        "shelljs": "0.8.5"
+        "express": "5.1.0",
+        "shelljs": "0.10.0"
     }
 }

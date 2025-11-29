@@ -4,8 +4,8 @@ import express from "express";
 import shelljs from "shelljs";
 
 const app = express();
-app.use(bparser.text());
 app.use(expcors({ origin: true }));
+app.use(bparser.text({ type: "*/*" }));
 
 app.get("/", (req, res) => {
   fetch("https://api.ipify.org?format=json")
@@ -17,22 +17,31 @@ app.get("/", (req, res) => {
     .catch((error) => res.send(error));
 });
 
-app.post("/exec", async (req, res) =>
+app.post("/exec", (req, res) => {
+  const command = req.body.replace("--format-to-json", "");
+  console.log("Executing:", command);
+  const formatJson = req.body.includes("--format-to-json");
+
   shelljs.exec(
-    req.body,
+    command,
     {
       timeout: 10 * 1000,
     },
     (code, stdout, stderr) => {
       console.log(`Command response code: ${code}.`);
-      if (stdout) {
-        res.send(`Output: ${stdout}`);
-      } else if (stderr) {
-        res.send(`Error: ${stderr}`);
+      if (code !== 0) {
+        return res.status(500).send({
+          code,
+          error: stderr || "Unknown error",
+        });
       }
+      return res.send({
+        code,
+        output: formatJson ? JSON.parse(stdout) : stdout,
+      });
     },
-  ),
-);
+  );
+});
 
 app.listen(8080, () => {
   console.log(`listening`);

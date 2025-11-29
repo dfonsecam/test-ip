@@ -2,13 +2,7 @@ url=$(shell gcloud run services describe test-ip --format='value(status.url)' --
 uid=$(shell gcloud auth print-identity-token)
 pid=$(shell gcloud config get-value core/project)
 
-cmd="telnet monibytebb 80"
-
-all:
-	@echo "build  - Build the docker image"
-	@echo "deploy - Deploy the image to Cloud Run"
-	@echo "clean  - Clean resoruces created in this test"
-	@echo "call   - Call the Cloud Run service"
+CMD_FILE := Makefile-cmd.sh
 
 build:
 	gcloud builds submit
@@ -28,10 +22,10 @@ call-nat:
 		--header "Authorization: Bearer $$token" \
 
 call-cmd:
-	@echo "Executing $(cmd)"
-	@token=$(uid) url=$(url)/exec cmd=$(cmd); \
-	curl $$url \
+	@echo "Executing command:"
+	@sed 's/^/  /' $(CMD_FILE)
+	@curl "$(url)/exec" \
 		--request POST \
-  		--header "Authorization: Bearer $$token" \
-  		--header "Content-Type: text/plain" \
-  		--data-binary "$$cmd"
+		--header "Authorization: Bearer $(uid)" \
+		--header "Content-Type: text/plain" \
+		--data-binary "@$(CMD_FILE)"
